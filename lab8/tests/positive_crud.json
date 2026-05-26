@@ -1,0 +1,22 @@
+[
+  {
+    "category_id": 5,
+    "title": "Bruno Test Product",
+    "content": "Description of the test product",
+    "price": 5000,
+    "old_price": 6000,
+    "status": 1,
+    "keywords": "test, api, bruno",
+    "description": "Auto-generated test product",
+    "hit": 1,
+    "edit_category_id": 6,
+    "edit_title": "Bruno Test Product - Edited",
+    "edit_content": "Edited description of the test product",
+    "edit_price": 5500,
+    "edit_old_price": 5000,
+    "edit_status": 0,
+    "edit_keywords": "edited, test, api, bruno",
+    "edit_description": "Edited auto-generated test product",
+    "edit_hit": 0
+  }
+]

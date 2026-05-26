@@ -1,0 +1,132 @@
+[
+  {
+    "test_name": "Error: category_id > 15",
+    "expected_status": 400,
+    "category_id": 16,
+    "title": "Invalid Bounds",
+    "price": 1000,
+    "old_price": 0,
+    "status": 1,
+    "hit": 1
+  },
+  {
+    "test_name": "Error: category_id < 1",
+    "expected_status": 400,
+    "category_id": 0,
+    "title": "Invalid Bounds",
+    "price": 1000,
+    "old_price": 0,
+    "status": 1,
+    "hit": 1
+  },
+  {
+    "test_name": "Error: category_id is invalid type (string)",
+    "expected_status": 400,
+    "category_id": "five",
+    "title": "Invalid Type",
+    "price": 1000,
+    "old_price": 0,
+    "status": 1,
+    "hit": 1
+  },
+  {
+    "test_name": "Error: price is negative",
+    "expected_status": 400,
+    "category_id": 5,
+    "title": "Negative Price",
+    "price": -500,
+    "old_price": 0,
+    "status": 1,
+    "hit": 1
+  },
+  {
+    "test_name": "Error: price is invalid type (string)",
+    "expected_status": 400,
+    "category_id": 5,
+    "title": "String Price",
+    "price": "free",
+    "old_price": 0,
+    "status": 1,
+    "hit": 1
+  },
+  {
+    "test_name": "Error: old_price is negative",
+    "expected_status": 400,
+    "category_id": 5,
+    "title": "Negative Old Price",
+    "price": 1000,
+    "old_price": -200,
+    "status": 1,
+    "hit": 1
+  },
+  {
+    "test_name": "Error: status is out of bounds (>1)",
+    "expected_status": 400,
+    "category_id": 5,
+    "title": "Invalid Status",
+    "price": 1000,
+    "old_price": 0,
+    "status": 2,
+    "hit": 1
+  },
+  {
+    "test_name": "Error: status is invalid type (string)",
+    "expected_status": 400,
+    "category_id": 5,
+    "title": "Invalid Status Type",
+    "price": 1000,
+    "old_price": 0,
+    "status": "active",
+    "hit": 1
+  },
+  {
+    "test_name": "Error: hit is out of bounds (>1)",
+    "expected_status": 400,
+    "category_id": 5,
+    "title": "Invalid Hit",
+    "price": 1000,
+    "old_price": 0,
+    "status": 1,
+    "hit": 5
+  },
+  {
+    "test_name": "Error: title is empty (null)",
+    "expected_status": 400,
+    "category_id": 5,
+    "title": null,
+    "price": 1000,
+    "old_price": 0,
+    "status": 1,
+    "hit": 1
+  },
+  {
+    "test_name": "Error: title exceeds max length (varchar 255)",
+    "expected_status": 400,
+    "category_id": 5,
+    "title": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in",
+    "price": 1000,
+    "old_price": 0,
+    "status": 1,
+    "hit": 1
+  },
+  {
+    "test_name": "Security: SQL Injection in title",
+    "expected_status": 400,
+    "category_id": 5,
+    "title": "Test'; DROP TABLE products; --",
+    "price": 1000,
+    "old_price": 0,
+    "status": 1,
+    "hit": 1
+  },
+  {
+    "test_name": "Security: XSS payload in title",
+    "expected_status": 400,
+    "category_id": 5,
+    "title": "<script>alert(1)</script>",
+    "price": 1000,
+    "old_price": 0,
+    "status": 1,
+    "hit": 1
+  }
+]

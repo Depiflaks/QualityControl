@@ -1,0 +1,51 @@
+info:
+  name: Create
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{BASE_URL}}/api/addproduct"
+  body:
+    type: json
+    data: |-
+      {
+        "id": "{{$randomInt}}", 
+        "category_id": "{{category_id}}",
+        "title": "{{title}}",
+        "alias": "",
+        "content": "Negative test description",
+        "price": "{{price}}",
+        "old_price": 0,
+        "status": "{{status}}",
+        "keywords": "negative",
+        "description": "negative test",
+        "hit": "{{hit}}"
+      }
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        let expectedStatus = bru.getVar("expected_status");
+        let testName = bru.getVar("test_name");
+        let actualStatus = res.getStatus();
+
+        test(testName, function() {
+            expect(actualStatus, `Test Failed. Expected ${expectedStatus}, got ${actualStatus}`).to.equal(expectedStatus);
+        });
+
+        let body = res.getBody();
+
+        if ((actualStatus === 200 || actualStatus === 201) && body && body.id) {
+            bru.setVar("created_product_id", body.id);
+        } else {
+            bru.setNextRequest(null);
+        }
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

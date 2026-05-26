@@ -1,0 +1,48 @@
+info:
+  name: Add Product
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{BASE_URL}}/api/addproduct"
+  body:
+    type: json
+    data: |-
+      {
+        "id": "{{$randomInt}}", 
+        "category_id": "{{category_id}}",
+        "title": "{{title}}",
+        "alias": "",
+        "content": "{{content}}",
+        "price": "{{price}}",
+        "old_price": "{{old_price}}",
+        "status": "{{status}}",
+        "keywords": "{{keywords}}",
+        "description": "{{description}}",
+        "hit": "{{hit}}"
+      }
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("Status code is 200 or 201", function() {
+            expect(res.getStatus(), "Expected successful creation status code").to.be.oneOf([200, 201]);
+        });
+
+        test("Response contains valid structure and saves product ID", function() {
+            let responseData = res.getBody();
+            
+            expect(responseData.status, "Expected status 1 in response body").to.equal(1);
+            expect(responseData.id, "Created product ID is missing in the response").to.exist;
+            
+            bru.setVar("created_product_id", responseData.id);
+        });
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

@@ -1,0 +1,45 @@
+info:
+  name: Edit Product
+  type: http
+  seq: 3
+
+http:
+  method: POST
+  url: "{{BASE_URL}}/api/editproduct"
+  body:
+    type: json
+    data: |-
+      {
+        "id": "{{created_product_id}}",
+        "category_id": "{{edit_category_id}}",
+        "title": "{{edit_title}}",
+        "content": "{{edit_content}}",
+        "price": "{{edit_price}}",
+        "old_price": "{{edit_old_price}}",
+        "status": "{{edit_status}}",
+        "keywords": "{{edit_keywords}}",
+        "description": "{{edit_description}}",
+        "hit": "{{edit_hit}}"
+      }
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("Status code is 200", function() {
+            expect(res.getStatus(), "Expected status 200 for successful update").to.equal(200);
+        });
+
+        test("Response indicates successful update", function() {
+            let responseData = res.getBody();
+            if (responseData && responseData.status !== undefined) {
+                expect(responseData.status, "Expected status 1 in response body after edit").to.equal(1);
+            }
+        });
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

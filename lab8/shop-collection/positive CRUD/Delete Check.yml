@@ -1,0 +1,27 @@
+info:
+  name: Delete Check
+  type: http
+  seq: 6
+
+http:
+  method: GET
+  url: "{{BASE_URL}}/api/products"
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("Verify test data is removed", function() {
+            let products = res.getBody();
+            let targetId = bru.getVar("created_product_id");
+            
+            let deletedProduct = products.find(p => p.id === String(targetId));
+            expect(deletedProduct, `Product with ID ${targetId} still exists in the database after deletion`).to.be.undefined;
+        });
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

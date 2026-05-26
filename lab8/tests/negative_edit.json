@@ -1,0 +1,145 @@
+[
+  {
+    "test_name": "Edit Error: category_id > 15",
+    "expected_status": 400,
+    "edit_id": "{{created_product_id}}",
+    "category_id": 16,
+    "title": "Invalid Edit",
+    "price": 1000,
+    "old_price": 0,
+    "status": 1,
+    "hit": 1
+  },
+  {
+    "test_name": "Edit Error: category_id < 1",
+    "expected_status": 400,
+    "edit_id": "{{created_product_id}}",
+    "category_id": 0,
+    "title": "Invalid Edit",
+    "price": 1000,
+    "old_price": 0,
+    "status": 1,
+    "hit": 1
+  },
+  {
+    "test_name": "Edit Error: Negative price",
+    "expected_status": 400,
+    "edit_id": "{{created_product_id}}",
+    "category_id": 5,
+    "title": "Negative Price Edit",
+    "price": -100,
+    "old_price": 0,
+    "status": 1,
+    "hit": 1
+  },
+  {
+    "test_name": "Edit Error: Negative old_price",
+    "expected_status": 400,
+    "edit_id": "{{created_product_id}}",
+    "category_id": 5,
+    "title": "Negative Old Price Edit",
+    "price": 1000,
+    "old_price": -50,
+    "status": 1,
+    "hit": 1
+  },
+  {
+    "test_name": "Edit Error: Empty title",
+    "expected_status": 400,
+    "edit_id": "{{created_product_id}}",
+    "category_id": 5,
+    "title": "",
+    "price": 1000,
+    "old_price": 0,
+    "status": 1,
+    "hit": 1
+  },
+  {
+    "test_name": "Edit Error: Invalid status (>1)",
+    "expected_status": 400,
+    "edit_id": "{{created_product_id}}",
+    "category_id": 5,
+    "title": "Invalid Status Edit",
+    "price": 1000,
+    "old_price": 0,
+    "status": 5,
+    "hit": 1
+  },
+  {
+    "test_name": "Edit Error: Invalid status (<0)",
+    "expected_status": 400,
+    "edit_id": "{{created_product_id}}",
+    "category_id": 5,
+    "title": "Invalid Status Edit",
+    "price": 1000,
+    "old_price": 0,
+    "status": -1,
+    "hit": 1
+  },
+  {
+    "test_name": "Edit Error: Invalid hit (>1)",
+    "expected_status": 400,
+    "edit_id": "{{created_product_id}}",
+    "category_id": 5,
+    "title": "Invalid Hit Edit",
+    "price": 1000,
+    "old_price": 0,
+    "status": 1,
+    "hit": 2
+  },
+  {
+    "test_name": "Edit Error: Invalid ID (Non-existent)",
+    "expected_status": 404,
+    "edit_id": 9999999,
+    "category_id": 5,
+    "title": "Invalid ID Edit",
+    "price": 1000,
+    "old_price": 0,
+    "status": 1,
+    "hit": 1
+  },
+  {
+    "test_name": "Edit Error: Invalid ID (String)",
+    "expected_status": 400,
+    "edit_id": "abc",
+    "category_id": 5,
+    "title": "Invalid ID Edit",
+    "price": 1000,
+    "old_price": 0,
+    "status": 1,
+    "hit": 1
+  },
+  {
+    "test_name": "Edit Error: Invalid Price Type (String)",
+    "expected_status": 400,
+    "edit_id": "{{created_product_id}}",
+    "category_id": 5,
+    "title": "String Price Edit",
+    "price": "one thousand",
+    "old_price": 0,
+    "status": 1,
+    "hit": 1
+  },
+  {
+    "test_name": "Security: SQL Injection in title",
+    "expected_status": 400,
+    "edit_id": "{{created_product_id}}",
+    "category_id": 5,
+    "title": "Edited'; DROP TABLE products; --",
+    "price": 1000,
+    "old_price": 0,
+    "status": 1,
+    "hit": 1
+  },
+  {
+    "test_name": "Security: XSS in title",
+    "expected_status": 400,
+    "edit_id": "{{created_product_id}}",
+    "category_id": 5,
+    "title": "<script>alert('xss')</script>",
+    "price": 1000,
+    "old_price": 0,
+    "status": 1,
+    "hit": 1
+  }
+]

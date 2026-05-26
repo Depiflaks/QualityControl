@@ -1,0 +1,64 @@
+info:
+  name: Edit Check
+  type: http
+  seq: 4
+
+http:
+  method: GET
+  url: "{{BASE_URL}}/api/products"
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        function verifyProductFields(actualProduct, expectedData) {
+            expect(actualProduct.title, "Title mismatch").to.equal(expectedData.title);
+            expect(actualProduct.category_id, "Category ID mismatch").to.equal(String(expectedData.category_id));
+            expect(actualProduct.price, "Price mismatch").to.equal(String(expectedData.price));
+            expect(actualProduct.old_price, "Old price mismatch").to.equal(String(expectedData.old_price));
+            expect(actualProduct.status, "Status mismatch").to.equal(String(expectedData.status));
+            expect(actualProduct.hit, "Hit mismatch").to.equal(String(expectedData.hit));
+            
+            let actualContent = actualProduct.content === null ? "" : actualProduct.content;
+            let expectedContent = expectedData.content === null ? "" : expectedData.content;
+            expect(actualContent, "Content mismatch").to.equal(expectedContent);
+            
+            let actualKeywords = actualProduct.keywords === null ? "" : actualProduct.keywords;
+            let expectedKeywords = expectedData.keywords === null ? "" : expectedData.keywords;
+            expect(actualKeywords, "Keywords mismatch").to.equal(expectedKeywords);
+            
+            let actualDesc = actualProduct.description === null ? "" : actualProduct.description;
+            let expectedDesc = expectedData.description === null ? "" : expectedData.description;
+            expect(actualDesc, "Description mismatch").to.equal(expectedDesc);
+            
+            expect(actualProduct.alias, "Alias was not generated").to.be.a('string').and.not.empty; 
+        }
+
+        test("Edited product exists with updated data", function() {
+            let products = res.getBody();
+            let targetId = bru.getVar("created_product_id");
+            
+            let myProduct = products.find(p => p.id === String(targetId));
+            expect(myProduct, `Product with ID ${targetId} was not found`).to.not.be.undefined;
+
+            let expectedData = {
+                title: bru.getVar("edit_title"),
+                category_id: bru.getVar("edit_category_id"),
+                price: bru.getVar("edit_price"),
+                old_price: bru.getVar("edit_old_price"),
+                status: bru.getVar("edit_status"),
+                hit: bru.getVar("edit_hit"),
+                content: bru.getVar("edit_content"),
+                keywords: bru.getVar("edit_keywords"),
+                description: bru.getVar("edit_description")
+            };
+
+            verifyProductFields(myProduct, expectedData);
+        });
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

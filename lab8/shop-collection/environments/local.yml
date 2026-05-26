@@ -1,0 +1,6 @@
+name: local
+variables:
+  - name: BASE_URL
+    value: http://shop2.qatl.ru/shop
+  - name: testPrefix
+    value: lab8-bruno

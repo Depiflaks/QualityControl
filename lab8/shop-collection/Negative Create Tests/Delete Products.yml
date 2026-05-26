@@ -1,0 +1,29 @@
+info:
+  name: Delete Products
+  type: http
+  seq: 2
+
+http:
+  method: GET
+  url: "{{BASE_URL}}/api/deleteproduct?id={{created_product_id}}"
+  params:
+    - name: id
+      value: "{{created_product_id}}"
+      type: query
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        let deletedId = bru.getVar("created_product_id");
+
+        test("Cleanup created product on bug detection", function() {
+            expect(res.getStatus(), `Cleanup failed for product ID ${deletedId}`).to.equal(200);
+        });
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

@@ -1,0 +1,55 @@
+info:
+  name: Create
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{BASE_URL}}/api/addproduct"
+  body:
+    type: json
+    data: |-
+      {
+        "id": "{{$randomInt}}",
+        "category_id": 5,
+        "title": "Product for Delete Test",
+        "alias": "",
+        "content": "Will be deleted",
+        "price": 1000,
+        "old_price": 0,
+        "status": 1,
+        "keywords": "delete",
+        "description": "delete test",
+        "hit": 1
+      }
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        let actualStatus = res.getStatus();
+        let body = res.getBody();
+
+        test("Base product created for delete test", function() {
+            expect(actualStatus).to.be.oneOf([200, 201]);
+        });
+
+        if ((actualStatus === 200 || actualStatus === 201) && body && body.id) {
+            bru.setVar("created_product_id", body.id);
+            
+            let isRealId = bru.getVar("is_real_id");
+            if (isRealId) {
+                bru.setVar("target_delete_id", body.id);
+            } else {
+                bru.setVar("target_delete_id", bru.getVar("test_id"));
+            }
+        } else {
+            bru.setNextRequest(null);
+        }
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

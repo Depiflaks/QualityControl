@@ -1,0 +1,32 @@
+[
+  {
+    "test_name": "Delete Success: Existing ID",
+    "expected_status": 200,
+    "is_real_id": true,
+    "test_id": ""
+  },
+  {
+    "test_name": "Delete Error: Non-existing ID",
+    "expected_status": 200,
+    "is_real_id": false,
+    "test_id": "9999999"
+  },
+  {
+    "test_name": "Delete Error: Invalid ID Type (String)",
+    "expected_status": 200,
+    "is_real_id": false,
+    "test_id": "abc"
+  },
+  {
+    "test_name": "Delete Error: Negative ID",
+    "expected_status": 200,
+    "is_real_id": false,
+    "test_id": "-10"
+  },
+  {
+    "test_name": "Delete Error: Empty ID",
+    "expected_status": 200,
+    "is_real_id": false,
+    "test_id": ""
+  }
+]

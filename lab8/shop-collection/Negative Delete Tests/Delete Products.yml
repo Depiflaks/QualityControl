@@ -1,0 +1,31 @@
+info:
+  name: Delete Products
+  type: http
+  seq: 2
+
+http:
+  method: GET
+  url: "{{BASE_URL}}/api/deleteproduct?id={{target_delete_id}}"
+  params:
+    - name: id
+      value: "{{target_delete_id}}"
+      type: query
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        let expectedStatus = bru.getVar("expected_status");
+        let testName = bru.getVar("test_name");
+        let actualStatus = res.getStatus();
+
+        test(testName, function() {
+            expect(actualStatus, `Expected ${expectedStatus}, got ${actualStatus}`).to.equal(expectedStatus);
+        });
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

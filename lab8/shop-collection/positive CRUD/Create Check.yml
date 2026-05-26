@@ -1,0 +1,48 @@
+info:
+  name: Create Check
+  type: http
+  seq: 2
+
+http:
+  method: GET
+  url: "{{BASE_URL}}/api/products"
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        function verifyProductFields(actualProduct, expectedData) {
+            expect(actualProduct.title, "Title mismatch").to.equal(expectedData.title);
+            expect(actualProduct.category_id, "Category ID mismatch").to.equal(String(expectedData.category_id));
+            expect(actualProduct.price, "Price mismatch").to.equal(String(expectedData.price));
+            
+            let actualContent = actualProduct.content === null ? "" : actualProduct.content;
+            let expectedContent = expectedData.content === null ? "" : expectedData.content;
+            expect(actualContent, "Content mismatch").to.equal(expectedContent);
+            
+            expect(actualProduct.alias, "Alias was not generated").to.be.a('string').and.not.empty; 
+        }
+
+        test("Created product exists with correct data", function() {
+            let products = res.getBody();
+            let targetId = bru.getVar("created_product_id");
+            
+            let myProduct = products.find(p => p.id === String(targetId));
+            expect(myProduct, `Product with ID ${targetId} was not found`).to.not.be.undefined;
+
+            let expectedData = {
+                title: bru.getVar("title"),
+                category_id: bru.getVar("category_id"),
+                price: bru.getVar("price"),
+                content: bru.getVar("content")
+            };
+
+            verifyProductFields(myProduct, expectedData);
+        });
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
