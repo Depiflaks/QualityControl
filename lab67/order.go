@@ -37,24 +37,24 @@ type OrderItem struct {
 }
 
 type Order struct {
-	Items           map[string]OrderItem
-	Status          OrderStatus
-	DiscountPercent float64
+	items           map[string]OrderItem
+	status          OrderStatus
+	discountPercent float64
 
 	inventory InventoryService
 }
 
 func NewOrder(inventory InventoryService) *Order {
 	return &Order{
-		Items:           make(map[string]OrderItem),
-		Status:          StatusDraft,
-		DiscountPercent: 0,
+		items:           make(map[string]OrderItem),
+		status:          StatusDraft,
+		discountPercent: 0,
 		inventory:       inventory,
 	}
 }
 
 func (o *Order) AddItem(productID string, quantity int) error {
-	if o.Status != StatusDraft {
+	if o.status != StatusDraft {
 		return ErrOrderIsNotDraft
 	}
 
@@ -68,7 +68,7 @@ func (o *Order) AddItem(productID string, quantity int) error {
 
 	totalQuantity := quantity
 
-	if item, exists := o.Items[productID]; exists {
+	if item, exists := o.items[productID]; exists {
 		totalQuantity += item.Quantity
 	}
 
@@ -86,7 +86,7 @@ func (o *Order) AddItem(productID string, quantity int) error {
 		return err
 	}
 
-	o.Items[productID] = OrderItem{
+	o.items[productID] = OrderItem{
 		ProductID: productID,
 		Quantity:  totalQuantity,
 		UnitPrice: price,
@@ -96,7 +96,7 @@ func (o *Order) AddItem(productID string, quantity int) error {
 }
 
 func (o *Order) RemoveItem(productID string) error {
-	if o.Status != StatusDraft {
+	if o.status != StatusDraft {
 		return ErrOrderIsNotDraft
 	}
 
@@ -104,17 +104,17 @@ func (o *Order) RemoveItem(productID string) error {
 		return ErrInvalidProductID
 	}
 
-	if _, exists := o.Items[productID]; !exists {
+	if _, exists := o.items[productID]; !exists {
 		return ErrProductNotFound
 	}
 
-	delete(o.Items, productID)
+	delete(o.items, productID)
 
 	return nil
 }
 
 func (o *Order) ApplyDiscount(percent float64) error {
-	if o.Status != StatusDraft {
+	if o.status != StatusDraft {
 		return ErrOrderIsNotDraft
 	}
 
@@ -122,7 +122,7 @@ func (o *Order) ApplyDiscount(percent float64) error {
 		return ErrInvalidDiscount
 	}
 
-	o.DiscountPercent = percent
+	o.discountPercent = percent
 
 	return nil
 }
@@ -130,29 +130,29 @@ func (o *Order) ApplyDiscount(percent float64) error {
 func (o *Order) CalculateTotal() float64 {
 	total := 0.0
 
-	for _, item := range o.Items {
+	for _, item := range o.items {
 		total += float64(item.Quantity) * item.UnitPrice
 	}
 
-	discount := total * o.DiscountPercent / 100
+	discount := total * o.discountPercent / 100
 
 	return total - discount
 }
 
 func (o *Order) ConfirmOrder() error {
-	if o.Status == StatusCancelled {
+	if o.status == StatusCancelled {
 		return ErrOrderIsCancelled
 	}
 
-	if o.Status == StatusConfirmed {
+	if o.status == StatusConfirmed {
 		return ErrOrderIsConfirmed
 	}
 
-	if len(o.Items) == 0 {
+	if len(o.items) == 0 {
 		return ErrOrderIsEmpty
 	}
 
-	for _, item := range o.Items {
+	for _, item := range o.items {
 		available, err := o.inventory.CheckAvailability(item.ProductID, item.Quantity)
 		if err != nil {
 			return err
@@ -163,21 +163,21 @@ func (o *Order) ConfirmOrder() error {
 		}
 	}
 
-	o.Status = StatusConfirmed
+	o.status = StatusConfirmed
 
 	return nil
 }
 
 func (o *Order) CancelOrder() error {
-	if o.Status == StatusCancelled {
+	if o.status == StatusCancelled {
 		return ErrOrderIsCancelled
 	}
 
-	if o.Status == StatusConfirmed {
+	if o.status == StatusConfirmed {
 		return ErrOrderIsConfirmed
 	}
 
-	o.Status = StatusCancelled
+	o.status = StatusCancelled
 
 	return nil
 }

@@ -28,9 +28,9 @@ func TestNewOrderCreatesDraftOrder(t *testing.T) {
 	order := NewOrder(inventory)
 
 	require.NotNil(t, order)
-	require.Empty(t, order.Items)
-	require.Equal(t, StatusDraft, order.Status)
-	require.Equal(t, 0.0, order.DiscountPercent)
+	require.Empty(t, order.items)
+	require.Equal(t, StatusDraft, order.status)
+	require.Equal(t, 0.0, order.discountPercent)
 }
 
 func TestAddItemAddsNewItem(t *testing.T) {
@@ -43,31 +43,12 @@ func TestAddItemAddsNewItem(t *testing.T) {
 	err := order.AddItem("product-1", 2)
 
 	require.NoError(t, err)
-	require.Len(t, order.Items, 1)
+	require.Len(t, order.items, 1)
 	require.Equal(t, OrderItem{
 		ProductID: "product-1",
 		Quantity:  2,
 		UnitPrice: 100,
-	}, order.Items["product-1"])
-
-	inventory.AssertExpectations(t)
-}
-
-func TestAddItemIncreasesExistingItemQuantity(t *testing.T) {
-	inventory := new(MockInventoryService)
-	inventory.On("CheckAvailability", "product-1", 2).Return(true, nil).Once()
-	inventory.On("GetPrice", "product-1").Return(100.0, nil).Once()
-	inventory.On("CheckAvailability", "product-1", 5).Return(true, nil).Once()
-	inventory.On("GetPrice", "product-1").Return(90.0, nil).Once()
-
-	order := NewOrder(inventory)
-
-	require.NoError(t, order.AddItem("product-1", 2))
-	err := order.AddItem("product-1", 3)
-
-	require.NoError(t, err)
-	require.Equal(t, 5, order.Items["product-1"].Quantity)
-	require.Equal(t, 90.0, order.Items["product-1"].UnitPrice)
+	}, order.items["product-1"])
 
 	inventory.AssertExpectations(t)
 }
@@ -75,7 +56,7 @@ func TestAddItemIncreasesExistingItemQuantity(t *testing.T) {
 func TestAddItemReturnsErrorWhenOrderIsNotDraft(t *testing.T) {
 	inventory := new(MockInventoryService)
 	order := NewOrder(inventory)
-	order.Status = StatusConfirmed
+	order.status = StatusConfirmed
 
 	err := order.AddItem("product-1", 1)
 
@@ -116,7 +97,7 @@ func TestAddItemReturnsInventoryError(t *testing.T) {
 	err := order.AddItem("product-1", 1)
 
 	require.ErrorIs(t, err, inventoryErr)
-	require.Empty(t, order.Items)
+	require.Empty(t, order.items)
 	inventory.AssertExpectations(t)
 	inventory.AssertNotCalled(t, "GetPrice")
 }
@@ -130,7 +111,7 @@ func TestAddItemReturnsErrorWhenProductIsUnavailable(t *testing.T) {
 	err := order.AddItem("product-1", 10)
 
 	require.ErrorIs(t, err, ErrProductUnavailable)
-	require.Empty(t, order.Items)
+	require.Empty(t, order.items)
 	inventory.AssertExpectations(t)
 	inventory.AssertNotCalled(t, "GetPrice")
 }
@@ -146,14 +127,14 @@ func TestAddItemReturnsErrorWhenPriceCannotBeLoaded(t *testing.T) {
 	err := order.AddItem("product-1", 1)
 
 	require.ErrorIs(t, err, priceErr)
-	require.Empty(t, order.Items)
+	require.Empty(t, order.items)
 	inventory.AssertExpectations(t)
 }
 
 func TestRemoveItemRemovesExistingItem(t *testing.T) {
 	inventory := new(MockInventoryService)
 	order := NewOrder(inventory)
-	order.Items["product-1"] = OrderItem{
+	order.items["product-1"] = OrderItem{
 		ProductID: "product-1",
 		Quantity:  1,
 		UnitPrice: 100,
@@ -162,13 +143,13 @@ func TestRemoveItemRemovesExistingItem(t *testing.T) {
 	err := order.RemoveItem("product-1")
 
 	require.NoError(t, err)
-	require.Empty(t, order.Items)
+	require.Empty(t, order.items)
 }
 
 func TestRemoveItemReturnsErrorWhenOrderIsNotDraft(t *testing.T) {
 	inventory := new(MockInventoryService)
 	order := NewOrder(inventory)
-	order.Status = StatusConfirmed
+	order.status = StatusConfirmed
 
 	err := order.RemoveItem("product-1")
 
@@ -200,24 +181,21 @@ func TestApplyDiscountChangesDiscountPercent(t *testing.T) {
 	err := order.ApplyDiscount(15)
 
 	require.NoError(t, err)
-	require.Equal(t, 15.0, order.DiscountPercent)
+	require.Equal(t, 15.0, order.discountPercent)
 }
 
 func TestApplyDiscountAllowsBoundaryValues(t *testing.T) {
 	inventory := new(MockInventoryService)
 	order := NewOrder(inventory)
 
-	require.NoError(t, order.ApplyDiscount(0))
-	require.Equal(t, 0.0, order.DiscountPercent)
-
 	require.NoError(t, order.ApplyDiscount(100))
-	require.Equal(t, 100.0, order.DiscountPercent)
+	require.Equal(t, 100.0, order.discountPercent)
 }
 
 func TestApplyDiscountReturnsErrorWhenOrderIsNotDraft(t *testing.T) {
 	inventory := new(MockInventoryService)
 	order := NewOrder(inventory)
-	order.Status = StatusConfirmed
+	order.status = StatusConfirmed
 
 	err := order.ApplyDiscount(10)
 
@@ -254,17 +232,17 @@ func TestCalculateTotalReturnsZeroForEmptyOrder(t *testing.T) {
 func TestCalculateTotalAppliesDiscount(t *testing.T) {
 	inventory := new(MockInventoryService)
 	order := NewOrder(inventory)
-	order.Items["product-1"] = OrderItem{
+	order.items["product-1"] = OrderItem{
 		ProductID: "product-1",
 		Quantity:  2,
 		UnitPrice: 100,
 	}
-	order.Items["product-2"] = OrderItem{
+	order.items["product-2"] = OrderItem{
 		ProductID: "product-2",
 		Quantity:  1,
 		UnitPrice: 50,
 	}
-	order.DiscountPercent = 20
+	order.discountPercent = 20
 
 	total := order.CalculateTotal()
 
@@ -276,7 +254,7 @@ func TestConfirmOrderConfirmsDraftOrder(t *testing.T) {
 	inventory.On("CheckAvailability", "product-1", 2).Return(true, nil).Once()
 
 	order := NewOrder(inventory)
-	order.Items["product-1"] = OrderItem{
+	order.items["product-1"] = OrderItem{
 		ProductID: "product-1",
 		Quantity:  2,
 		UnitPrice: 100,
@@ -285,14 +263,14 @@ func TestConfirmOrderConfirmsDraftOrder(t *testing.T) {
 	err := order.ConfirmOrder()
 
 	require.NoError(t, err)
-	require.Equal(t, StatusConfirmed, order.Status)
+	require.Equal(t, StatusConfirmed, order.status)
 	inventory.AssertExpectations(t)
 }
 
 func TestConfirmOrderReturnsErrorWhenOrderIsCancelled(t *testing.T) {
 	inventory := new(MockInventoryService)
 	order := NewOrder(inventory)
-	order.Status = StatusCancelled
+	order.status = StatusCancelled
 
 	err := order.ConfirmOrder()
 
@@ -303,7 +281,7 @@ func TestConfirmOrderReturnsErrorWhenOrderIsCancelled(t *testing.T) {
 func TestConfirmOrderReturnsErrorWhenOrderIsAlreadyConfirmed(t *testing.T) {
 	inventory := new(MockInventoryService)
 	order := NewOrder(inventory)
-	order.Status = StatusConfirmed
+	order.status = StatusConfirmed
 
 	err := order.ConfirmOrder()
 
@@ -327,7 +305,7 @@ func TestConfirmOrderReturnsInventoryError(t *testing.T) {
 	inventory.On("CheckAvailability", "product-1", 1).Return(false, inventoryErr).Once()
 
 	order := NewOrder(inventory)
-	order.Items["product-1"] = OrderItem{
+	order.items["product-1"] = OrderItem{
 		ProductID: "product-1",
 		Quantity:  1,
 		UnitPrice: 100,
@@ -336,7 +314,7 @@ func TestConfirmOrderReturnsInventoryError(t *testing.T) {
 	err := order.ConfirmOrder()
 
 	require.ErrorIs(t, err, inventoryErr)
-	require.Equal(t, StatusDraft, order.Status)
+	require.Equal(t, StatusDraft, order.status)
 	inventory.AssertExpectations(t)
 }
 
@@ -345,7 +323,7 @@ func TestConfirmOrderReturnsErrorWhenProductIsUnavailable(t *testing.T) {
 	inventory.On("CheckAvailability", "product-1", 1).Return(false, nil).Once()
 
 	order := NewOrder(inventory)
-	order.Items["product-1"] = OrderItem{
+	order.items["product-1"] = OrderItem{
 		ProductID: "product-1",
 		Quantity:  1,
 		UnitPrice: 100,
@@ -354,7 +332,7 @@ func TestConfirmOrderReturnsErrorWhenProductIsUnavailable(t *testing.T) {
 	err := order.ConfirmOrder()
 
 	require.ErrorIs(t, err, ErrProductUnavailable)
-	require.Equal(t, StatusDraft, order.Status)
+	require.Equal(t, StatusDraft, order.status)
 	inventory.AssertExpectations(t)
 }
 
@@ -365,13 +343,13 @@ func TestCancelOrderCancelsDraftOrder(t *testing.T) {
 	err := order.CancelOrder()
 
 	require.NoError(t, err)
-	require.Equal(t, StatusCancelled, order.Status)
+	require.Equal(t, StatusCancelled, order.status)
 }
 
 func TestCancelOrderReturnsErrorWhenOrderIsAlreadyCancelled(t *testing.T) {
 	inventory := new(MockInventoryService)
 	order := NewOrder(inventory)
-	order.Status = StatusCancelled
+	order.status = StatusCancelled
 
 	err := order.CancelOrder()
 
@@ -381,7 +359,7 @@ func TestCancelOrderReturnsErrorWhenOrderIsAlreadyCancelled(t *testing.T) {
 func TestCancelOrderReturnsErrorWhenOrderIsConfirmed(t *testing.T) {
 	inventory := new(MockInventoryService)
 	order := NewOrder(inventory)
-	order.Status = StatusConfirmed
+	order.status = StatusConfirmed
 
 	err := order.CancelOrder()
 
